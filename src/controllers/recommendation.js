@@ -72,7 +72,7 @@ const setUniqueConstraints = async (req, res) => {
 		await neo4jMigrations.setUserIdAsUnique()
 		res.status(200).json({
 			status: true,
-			message: 'Projection, FRP & KNN Run Successfully',
+			message: 'Setting Unique Constraints Successful',
 			data: {},
 		})
 	} catch (err) {

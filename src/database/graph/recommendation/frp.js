@@ -59,7 +59,7 @@ const runKNN = async () => {
                 randomSeed: 42,
                 concurrency: 1,
                 sampleRate: 1.0,
-                deltaThreshold: 0.0,
+                deltaThreshold: 0.9,
                 writeRelationshipType: "SIMILAR",
                 writeProperty: "score"
             })
@@ -148,7 +148,7 @@ const setRatingToInteger = async () => {
 	const session = neo4jDriver.session()
 	try {
 		const result = await session.run(`MATCH ()-[r:RATED]->()
-        SET r.rating = toInteger(r.rating)`)
+        SET r.rating = toInteger(1)`)
 		console.log(JSON.stringify(result, null, 4))
 		return true
 	} catch (err) {
