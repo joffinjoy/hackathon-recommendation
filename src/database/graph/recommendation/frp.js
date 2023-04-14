@@ -5,7 +5,8 @@ const generateProjection = async () => {
 	const session = neo4jDriver.session()
 	try {
 		const result = await session.run(
-			`CALL gds.graph.project(
+			`
+            CALL gds.graph.project(
                 'ratings',
                 ['User','Item'],
                 {
@@ -14,7 +15,8 @@ const generateProjection = async () => {
                     properties: 'rating'
                   }
                 }
-              )`
+            )
+            `
 		)
 		console.log(JSON.stringify(result, null, 4))
 		return true
@@ -29,16 +31,16 @@ const runFRP = async () => {
 	const session = neo4jDriver.session()
 	try {
 		const result = await session.run(
-			`CALL gds.fastRP.mutate('ratings',
-            {
-              embeddingDimension: 16,
-              randomSeed: 42,
-              mutateProperty: 'embedding',
-              relationshipWeightProperty: 'rating',
-              iterationWeights: [0.8, 1, 1, 1]
-            }
-          )
-          YIELD nodePropertiesWritten`
+			`
+            CALL gds.fastRP.mutate('ratings', {
+                embeddingDimension: 16,
+                randomSeed: 42,
+                mutateProperty: 'embedding',
+                relationshipWeightProperty: 'rating',
+                iterationWeights: [0.8, 1, 1, 1]
+            })
+            YIELD nodePropertiesWritten
+            `
 		)
 		console.log(JSON.stringify(result, null, 4))
 		return true
@@ -53,7 +55,8 @@ const runKNN = async () => {
 	const session = neo4jDriver.session()
 	try {
 		const result = await session.run(
-			`CALL gds.knn.write('ratings', {
+			`
+            CALL gds.knn.write('ratings', {
                 topK: 9,
                 nodeProperties: ['embedding'],
                 randomSeed: 42,
@@ -64,7 +67,8 @@ const runKNN = async () => {
                 writeProperty: "score"
             })
             YIELD nodesCompared, relationshipsWritten, similarityDistribution
-            RETURN nodesCompared, relationshipsWritten, similarityDistribution.mean as meanSimilarity`
+            RETURN nodesCompared, relationshipsWritten, similarityDistribution.mean as meanSimilarity
+            `
 		)
 		console.log(JSON.stringify(result, null, 4))
 		return true
@@ -79,7 +83,14 @@ const findSimilarUsers = async (userId) => {
 	const session = neo4jDriver.session()
 	try {
 		const result = await session.run(
-			'MATCH (n:User{userId: $userId})-[r:SIMILAR]->(m:User) RETURN n.userId as User1, m.userId as User2, r.score as similarity ORDER BY similarity DESCENDING, User1, User2',
+			`
+            MATCH (n:User{userId: $userId})-[r:SIMILAR]->(m:User) 
+            RETURN 
+                n.userId as User1, 
+                m.userId as User2, 
+                r.score as similarity 
+            ORDER BY similarity DESCENDING, User1, User2
+            `,
 			{ userId }
 		)
 		console.log(JSON.stringify(result, null, 4))
@@ -91,33 +102,17 @@ const findSimilarUsers = async (userId) => {
 	}
 }
 
-/* const recommendItems = async (similarUserId, userId) => {
-	const session = neo4jDriver.session()
-	try {
-		const result = await session.run(
-			'MATCH (:User {userId: $similarUserId})-->(p1:Item) WITH collect(p1) as items MATCH (:User {userId: $userId})-->(p2:Item) WHERE not p2 in items RETURN p2.itemId as itemId, p2.title as title',
-			{
-				similarUserId,
-				userId,
-			}
-		)
-		return result
-	} catch (err) {
-		console.log(err)
-	} finally {
-		session.close()
-	}
-} */
-
 const recommendItems = async (similarUserId, userId) => {
 	const session = neo4jDriver.session()
 	try {
 		const result = await session.run(
-			`MATCH (:User {userId: $userId})-->(p1:Item)
+			`
+            MATCH (:User {userId: $userId})-->(p1:Item)
             WITH collect(p1) as items
             MATCH (:User {userId: $similarUserId})-->(p2:Item)
             WHERE not p2 in items
-            RETURN p2.itemId as itemId, p2.title as title`,
+            RETURN p2.itemId as itemId, p2.title as title
+            `,
 			{
 				similarUserId,
 				userId,
@@ -147,8 +142,12 @@ const deleteProjection = async () => {
 const setRatingToInteger = async () => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run(`MATCH ()-[r:RATED]->()
-        SET r.rating = toInteger(r.rating)`)
+		const result = await session.run(
+			`
+            MATCH ()-[r:RATED]->()
+            SET r.rating = toInteger(r.rating)
+            `
+		)
 		console.log(JSON.stringify(result, null, 4))
 		return true
 	} catch (err) {
@@ -161,7 +160,12 @@ const setRatingToInteger = async () => {
 const deleteDeleteSIMILARRelationships = async () => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run('match ()-[n:SIMILAR]-() delete n')
+		const result = await session.run(
+			`
+            match ()-[n:SIMILAR]-() 
+            DELETE n
+            `
+		)
 		console.log(JSON.stringify(result, null, 4))
 		return true
 	} catch (err) {

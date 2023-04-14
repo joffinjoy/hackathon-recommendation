@@ -47,7 +47,7 @@ const getRecommendations = async (req, res) => {
 
 const triggerProjectionAndKNN = async (req, res) => {
 	try {
-		await frpQueries.setRatingToInteger()
+		//await frpQueries.setRatingToInteger()
 		await frpQueries.deleteProjection()
 		await frpQueries.deleteDeleteSIMILARRelationships()
 		await frpQueries.generateProjection()
