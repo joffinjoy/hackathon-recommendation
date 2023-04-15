@@ -13,7 +13,7 @@ exports.nounTokenizer = (inputString) => {
 	const taggedTokens = tagger.tag(tokens)
 	const keywords = []
 	for (const [token, tag] of taggedTokens) {
-		if (tag.startsWith('NN') /* || tag.startsWith('JJ') */) {
+		if (tag.startsWith('NN') || tag.startsWith('VBG')) {
 			// NN is the tag for a noun
 			keywords.push(token)
 		}

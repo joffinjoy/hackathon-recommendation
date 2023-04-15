@@ -58,13 +58,13 @@ const generateProjection = async () => {
 const runNodeSimilarity = async () => {
 	const session = neo4jDriver.session()
 	try {
+		//similarityCutoff: 0.5
 		const result = await session.run(
 			`
             CALL gds.nodeSimilarity.write('contentGraph', {
-                nodeLabels:['Item','Category','Topic'],
+                nodeLabels:['Item','Topic'],
                 writeRelationshipType: 'CONTENT_SIMILAR',
-                writeProperty: 'score',
-                similarityCutoff: 0.5
+                writeProperty: 'score'
             })
             YIELD nodesCompared, relationshipsWritten
             `
