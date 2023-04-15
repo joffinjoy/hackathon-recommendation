@@ -97,9 +97,24 @@ const recomputeContentSimilarity = async (req, res) => {
 	}
 }
 
+const getItemPageRecommendations = async (req, res) => {
+	try {
+		const itemId = req.body.itemId
+		const similarItems = await contentFilteringQueries.getSimilarItems(itemId)
+		res.status(200).json({
+			status: true,
+			message: 'Item Page Recommendations Fetched',
+			data: similarItems,
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
 exports.recommendationController = {
 	getRecommendations,
 	triggerProjectionAndKNN,
 	setUniqueConstraints,
 	recomputeContentSimilarity,
+	getItemPageRecommendations,
 }

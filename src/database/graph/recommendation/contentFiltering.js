@@ -64,7 +64,8 @@ const runNodeSimilarity = async () => {
             CALL gds.nodeSimilarity.write('contentGraph', {
                 nodeLabels:['Item','Topic'],
                 writeRelationshipType: 'CONTENT_SIMILAR',
-                writeProperty: 'score'
+                writeProperty: 'score',
+                similarityCutoff: 0.4
             })
             YIELD nodesCompared, relationshipsWritten
             `
@@ -78,9 +79,36 @@ const runNodeSimilarity = async () => {
 	}
 }
 
+const getSimilarItems = async (itemId) => {
+	const session = neo4jDriver.session()
+	try {
+		const result = await session.run(
+			`
+            MATCH (i:Item {itemId: $itemId})-[r:CONTENT_SIMILAR]-(q:Item)
+            WHERE r.score >= 0.5
+            RETURN i as selectedItem, q.itemId as itemId, q.title as title
+            LIMIT 10
+            `,
+			{
+				itemId,
+			}
+		)
+		const recommendedItems = result.records.map((record) => {
+			return { itemId: record.get('itemId'), title: record.get('title') }
+		})
+		//const selectedItem = result.records[0].get('i')
+		return recommendedItems
+	} catch (err) {
+		console.log(err)
+	} finally {
+		session.close()
+	}
+}
+
 exports.contentFilteringQueries = {
 	generateProjection,
 	runNodeSimilarity,
 	deleteProjection,
 	deleteContentSimilarRelationships,
+	getSimilarItems,
 }
