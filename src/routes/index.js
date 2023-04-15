@@ -12,4 +12,5 @@ router.post('/get-recommendations', recommendationController.getRecommendations)
 router.post('/trigger-projection-and-knn', recommendationController.triggerProjectionAndKNN)
 router.post('/set-unique-constraints', recommendationController.setUniqueConstraints)
 router.post('/get-user-emails', userController.getUserEmails)
+router.post('/recompute-content-similarity', recommendationController.recomputeContentSimilarity)
 module.exports = router

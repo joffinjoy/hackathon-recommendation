@@ -63,7 +63,7 @@ const runKNN = async () => {
                 concurrency: 1,
                 sampleRate: 1.0,
                 deltaThreshold: 0.0,
-                writeRelationshipType: "SIMILAR",
+                writeRelationshipType: "COLLAB_SIMILAR",
                 writeProperty: "score"
             })
             YIELD nodesCompared, relationshipsWritten, similarityDistribution
@@ -84,7 +84,7 @@ const findSimilarUsers = async (userId) => {
 	try {
 		const result = await session.run(
 			`
-            MATCH (n:User{userId: $userId})-[r:SIMILAR]->(m:User) 
+            MATCH (n:User{userId: $userId})-[r:COLLAB_SIMILAR]->(m:User) 
             RETURN 
                 n.userId as User1, 
                 m.userId as User2, 
@@ -162,7 +162,7 @@ const deleteDeleteSIMILARRelationships = async () => {
 	try {
 		const result = await session.run(
 			`
-            match ()-[n:SIMILAR]-() 
+            match ()-[n:COLLAB_SIMILAR]-() 
             DELETE n
             `
 		)

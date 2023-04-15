@@ -1,6 +1,7 @@
 'use strict'
 
 const { frpQueries } = require('@database/graph/recommendation/frp')
+const { contentFilteringQueries } = require('@database/graph/recommendation/contentFiltering')
 const { neo4jMigrations } = require('@database/graph/recommendation/migration')
 
 const getRecommendations = async (req, res) => {
@@ -80,8 +81,25 @@ const setUniqueConstraints = async (req, res) => {
 	}
 }
 
+const recomputeContentSimilarity = async (req, res) => {
+	try {
+		await contentFilteringQueries.deleteProjection()
+		await contentFilteringQueries.deleteContentSimilarRelationships()
+		await contentFilteringQueries.generateProjection()
+		await contentFilteringQueries.runNodeSimilarity()
+		res.status(200).json({
+			status: true,
+			message: 'Content Similarity Recomputed Successfully',
+			data: {},
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
 exports.recommendationController = {
 	getRecommendations,
 	triggerProjectionAndKNN,
 	setUniqueConstraints,
+	recomputeContentSimilarity,
 }
