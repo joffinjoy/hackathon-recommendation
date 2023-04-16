@@ -117,7 +117,7 @@ const getProfilePageItems = async (userId) => {
 
             MATCH (i)-[rel:CONTENT_SIMILAR]-(q:Item)
             WHERE NOT q IN ratedItems
-            WITH q, rel.score + 2*normalizedRating as simScore
+            WITH q, rel.score + 1.5*normalizedRating as simScore
             ORDER BY simScore DESC
             WITH DISTINCT q, simScore
             LIMIT 10
