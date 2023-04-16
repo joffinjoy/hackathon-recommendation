@@ -16,4 +16,5 @@ router.post('/recompute-content-similarity', recommendationController.recomputeC
 router.post('/get-item-page-recommendations', recommendationController.getItemPageRecommendations)
 router.post('/get-profile-page-recommendations', recommendationController.getProfilePageRecommendations)
 router.post('/trigger-page-rank', recommendationController.triggerPageRank)
+router.post('/trigger-auto-search', recommendationController.triggerAutoSearch)
 module.exports = router

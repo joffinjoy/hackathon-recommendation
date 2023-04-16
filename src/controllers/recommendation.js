@@ -4,6 +4,7 @@ const { frpQueries } = require('@database/graph/recommendation/frp')
 const { contentFilteringQueries } = require('@database/graph/recommendation/contentFiltering')
 const { neo4jMigrations } = require('@database/graph/recommendation/migration')
 const { pageRankQueries } = require('@database/graph/recommendation/pageRank')
+const { autoSearchService } = require('@services/autoSearch')
 
 const getRecommendations = async (req, res) => {
 	try {
@@ -141,6 +142,20 @@ const triggerPageRank = async (req, res) => {
 	}
 }
 
+const triggerAutoSearch = async (req, res) => {
+	try {
+		const command = req.query.command
+		await autoSearchService.triggerAutoSearch(command)
+		res.status(200).json({
+			status: true,
+			message: 'AutoSearch Command Received Successfully',
+			data: [],
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
 exports.recommendationController = {
 	getRecommendations,
 	triggerProjectionAndKNN,
@@ -149,4 +164,5 @@ exports.recommendationController = {
 	getItemPageRecommendations,
 	getProfilePageRecommendations,
 	triggerPageRank,
+	triggerAutoSearch,
 }

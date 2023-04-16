@@ -65,29 +65,8 @@ const runPageRank = async () => {
 	}
 }
 
-const getImportantTopics = async () => {
-	const session = neo4jDriver.session()
-	try {
-		const result = await session.run(
-			`
-            MATCH (t:Topic)
-            ORDERBY t.pageRank
-            return t.topicName as topic, t.pageRank as pageRank
-            LIMIT 50
-            `
-		)
-		console.log(JSON.stringify(result, null, 4))
-		return result
-	} catch (err) {
-		console.log(err)
-	} finally {
-		session.close()
-	}
-}
-
 exports.pageRankQueries = {
 	generateProjection,
 	deleteProjection,
 	runPageRank,
-	getImportantTopics,
 }
