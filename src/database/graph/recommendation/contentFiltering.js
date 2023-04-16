@@ -105,10 +105,45 @@ const getSimilarItems = async (itemId) => {
 	}
 }
 
+const getProfilePageItems = async (userId) => {
+	const session = neo4jDriver.session()
+	try {
+		const result = await session.run(
+			`
+            MATCH (u:User {userId: $userId})-[r:RATED]->(i:Item)
+            WITH i, COLLECT(i) as ratedItems, (r.rating - 1) / 4.0 as normalizedRating
+            ORDER BY normalizedRating DESC
+            LIMIT 5
+
+            MATCH (i)-[rel:CONTENT_SIMILAR]-(q:Item)
+            WHERE NOT q IN ratedItems
+            WITH q, rel.score + 2*normalizedRating as simScore
+            ORDER BY simScore DESC
+            WITH DISTINCT q, simScore
+            LIMIT 10
+            RETURN q.itemId as itemId, q.title as title, simScore as score
+            `,
+			{
+				userId,
+			}
+		)
+		const recommendedItems = result.records.map((record) => {
+			return { itemId: record.get('itemId'), title: record.get('title'), score: record.get('score') }
+		})
+		//const selectedItem = result.records[0].get('i')
+		return recommendedItems
+	} catch (err) {
+		console.log(err)
+	} finally {
+		session.close()
+	}
+}
+
 exports.contentFilteringQueries = {
 	generateProjection,
 	runNodeSimilarity,
 	deleteProjection,
 	deleteContentSimilarRelationships,
 	getSimilarItems,
+	getProfilePageItems,
 }

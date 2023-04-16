@@ -111,10 +111,25 @@ const getItemPageRecommendations = async (req, res) => {
 	}
 }
 
+const getProfilePageRecommendations = async (req, res) => {
+	try {
+		const userId = req.body.userId
+		const similarItems = await contentFilteringQueries.getProfilePageItems(userId)
+		res.status(200).json({
+			status: true,
+			message: 'Item Page Recommendations Fetched',
+			data: similarItems,
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
 exports.recommendationController = {
 	getRecommendations,
 	triggerProjectionAndKNN,
 	setUniqueConstraints,
 	recomputeContentSimilarity,
 	getItemPageRecommendations,
+	getProfilePageRecommendations,
 }
