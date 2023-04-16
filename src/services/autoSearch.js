@@ -3,6 +3,7 @@
 const cron = require('node-cron')
 const { autoSearchQueries } = require('@database/graph/recommendation/autoSearch')
 const { internalRequests } = require('@helpers/requests')
+const { contentFilteringQueries } = require('@database/graph/recommendation/contentFiltering')
 
 const autoSearchTask = cron.schedule(
 	'*/5 * * * *',
@@ -18,6 +19,10 @@ const autoSearchTask = cron.schedule(
 				},
 			})
 		}
+		await contentFilteringQueries.deleteProjection()
+		await contentFilteringQueries.deleteContentSimilarRelationships()
+		await contentFilteringQueries.generateProjection()
+		await contentFilteringQueries.runNodeSimilarity()
 	},
 	{
 		scheduled: false,
