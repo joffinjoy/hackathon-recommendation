@@ -3,6 +3,7 @@
 const { frpQueries } = require('@database/graph/recommendation/frp')
 const { contentFilteringQueries } = require('@database/graph/recommendation/contentFiltering')
 const { neo4jMigrations } = require('@database/graph/recommendation/migration')
+const { pageRankQueries } = require('@database/graph/recommendation/pageRank')
 
 const getRecommendations = async (req, res) => {
 	try {
@@ -125,6 +126,21 @@ const getProfilePageRecommendations = async (req, res) => {
 	}
 }
 
+const triggerPageRank = async (req, res) => {
+	try {
+		await pageRankQueries.deleteProjection()
+		await pageRankQueries.generateProjection()
+		await pageRankQueries.runPageRank()
+		res.status(200).json({
+			status: true,
+			message: 'PageRank Computed Successfully',
+			data: [],
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
 exports.recommendationController = {
 	getRecommendations,
 	triggerProjectionAndKNN,
@@ -132,4 +148,5 @@ exports.recommendationController = {
 	recomputeContentSimilarity,
 	getItemPageRecommendations,
 	getProfilePageRecommendations,
+	triggerPageRank,
 }

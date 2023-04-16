@@ -15,4 +15,5 @@ router.post('/get-user-emails', userController.getUserEmails)
 router.post('/recompute-content-similarity', recommendationController.recomputeContentSimilarity)
 router.post('/get-item-page-recommendations', recommendationController.getItemPageRecommendations)
 router.post('/get-profile-page-recommendations', recommendationController.getProfilePageRecommendations)
+router.post('/trigger-page-rank', recommendationController.triggerPageRank)
 module.exports = router
