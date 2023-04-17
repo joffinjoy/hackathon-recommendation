@@ -57,10 +57,21 @@ const setProviderIdAsUnique = async () => {
 	}
 }
 
+const deleteAllNodes = async () => {
+	const session = neo4jDriver.session()
+	try {
+		const query = 'MATCH (n) DETACH DELETE n'
+		await session.run(query)
+	} catch (err) {
+		console.log(err)
+		session.close()
+	}
+}
 exports.neo4jMigrations = {
 	setProviderIdAsUnique,
 	setMentorIdAsUnique,
 	setCategoryIdAsUnique,
 	setItemIdAsUnique,
 	setUserIdAsUnique,
+	deleteAllNodes,
 }

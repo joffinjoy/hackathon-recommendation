@@ -156,6 +156,19 @@ const triggerAutoSearch = async (req, res) => {
 	}
 }
 
+const deleteAllNodes = async (req, res) => {
+	try {
+		await neo4jMigrations.deleteAllNodes()
+		res.status(200).json({
+			status: true,
+			message: 'All Nodes Deleted',
+			data: [],
+		})
+	} catch (err) {
+		console.log(err)
+	}
+}
+
 exports.recommendationController = {
 	getRecommendations,
 	triggerProjectionAndKNN,
@@ -165,4 +178,5 @@ exports.recommendationController = {
 	getProfilePageRecommendations,
 	triggerPageRank,
 	triggerAutoSearch,
+	deleteAllNodes,
 }
