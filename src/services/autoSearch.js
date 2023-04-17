@@ -8,8 +8,14 @@ const { contentFilteringQueries } = require('@database/graph/recommendation/cont
 const autoSearchTask = cron.schedule(
 	'*/5 * * * *',
 	async () => {
-		const importantTopics = await autoSearchQueries.getImportantTopics()
-		for (const record of importantTopics.records) {
+		const min = 10
+		const max = 20
+		const randomSkipCount = Math.floor(Math.random() * (max - min + 1)) + min
+		const importantTopics = await autoSearchQueries.getImportantTopics(0, 10)
+		const secondaryTopics = await autoSearchQueries.getImportantTopics(randomSkipCount, 5)
+		const topics = importantTopics.records.concat(secondaryTopics.records)
+		console.log(topics)
+		for (const record of topics) {
 			console.log(record.get('topic'), ' : ', record.get('pageRank'))
 			await internalRequests.bapPOST({
 				route: process.env.BAP_DSEP_SEARCH,
