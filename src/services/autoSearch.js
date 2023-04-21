@@ -6,7 +6,7 @@ const { internalRequests } = require('@helpers/requests')
 const { contentFilteringQueries } = require('@database/graph/recommendation/contentFiltering')
 
 const autoSearchTask = cron.schedule(
-	'*/5 * * * *',
+	'*/1 * * * *',
 	async () => {
 		const min = 10
 		const max = 20
@@ -37,9 +37,14 @@ const autoSearchTask = cron.schedule(
 
 const triggerAutoSearch = async (command) => {
 	try {
-		console.log('HERE', command)
-		if (command === 'start') autoSearchTask.start()
-		else autoSearchTask.stop()
+		//console.log('Smar', command)
+		if (command === 'start') {
+			console.log('SMART AUTO-SEARCH STARTED')
+			autoSearchTask.start()
+		} else {
+			console.log('SMART AUTO-SEARCH STOPPED')
+			autoSearchTask.stop()
+		}
 	} catch (err) {
 		console.log(err)
 	}

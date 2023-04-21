@@ -11,7 +11,7 @@ const addItem = async ({ item, categories, mentor, provider }) => {
 
 		const categoryNodesArray = await Promise.all(
 			categories.map(async (category) => {
-				const categoryNodes = await Promise.all(
+				/* const categoryNodes = await Promise.all(
 					category.name.split(' ').map(async (category) => {
 						console.log('CATEGORY: ', category)
 						return await recommendationQueries.addCategory({
@@ -19,10 +19,10 @@ const addItem = async ({ item, categories, mentor, provider }) => {
 							name: category,
 						})
 					})
-				)
+				) */
 				const subcategoryNode = await recommendationQueries.addSubcategory(category)
 				return {
-					categoryNodes,
+					/* categoryNodes, */
 					subcategoryNode,
 				}
 			})
@@ -36,17 +36,14 @@ const addItem = async ({ item, categories, mentor, provider }) => {
 		await recommendationQueries.connectItemProviderMentor(itemId, providerId, mentorId)
 		await Promise.all(
 			categoryNodesArray.map(async (categoryObject) => {
-				recommendationQueries.createBelongsToEdge(
-					itemId,
-					categoryObject.subcategoryNode.properties.subcategoryId
-				)
-				categoryObject.categoryNodes.map((category) => {
+				recommendationQueries.createBelongsToEdge(itemId, categoryObject.subcategoryNode.properties.categoryId)
+				/* categoryObject.categoryNodes.map((category) => {
 					recommendationQueries.createRelatedToEdge(itemId, category.properties.categoryId)
 					recommendationQueries.createSubcategoryOfEdge(
 						categoryObject.subcategoryNode.properties.subcategoryId,
 						category.properties.categoryId
 					)
-				})
+				}) */
 			})
 		)
 

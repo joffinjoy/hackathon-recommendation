@@ -39,8 +39,8 @@ const generateProjection = async () => {
 			`
             CALL gds.graph.project(
                 'contentGraph',
-                ['Item','Category','Subcategory','Topic','Mentor'],
-                ['BELONGS_TO','RELATED_TO','IS_ABOUT','CONDUCTED_BY']
+                ['Item','Topic'],
+                ['IS_ABOUT']
             )
             YIELD
                 graphName AS graph, nodeProjection, nodeCount AS nodes, relationshipCount AS rels

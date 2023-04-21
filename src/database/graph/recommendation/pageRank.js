@@ -14,6 +14,11 @@ const deleteProjection = async () => {
 	}
 }
 
+/* properties:{
+    rating:{
+        defaultValue: 1
+    }
+} */
 const generateProjection = async () => {
 	const session = neo4jDriver.session()
 	try {
@@ -26,7 +31,13 @@ const generateProjection = async () => {
                         RATED:{
                             properties: 'rating'
                         },
-                        IS_ABOUT:{}
+                        IS_ABOUT:{
+                            properties:{
+                                rating:{
+                                    defaultValue: 1
+                                }
+                            }
+                        }
                     }
                 )
                 YIELD
@@ -41,7 +52,7 @@ const generateProjection = async () => {
 		session.close()
 	}
 }
-
+//relationshipWeightProperty:'rating'
 const runPageRank = async () => {
 	const session = neo4jDriver.session()
 	try {
@@ -51,7 +62,8 @@ const runPageRank = async () => {
                 dampingFactor: 0.85,
                 writeProperty: 'pageRank',
                 nodeLabels:['Item','Topic','User'],
-                relationshipTypes:['RATED','IS_ABOUT']
+                relationshipTypes:['RATED','IS_ABOUT'],
+                relationshipWeightProperty:'rating'
               })
               YIELD nodePropertiesWritten, ranIterations
             `

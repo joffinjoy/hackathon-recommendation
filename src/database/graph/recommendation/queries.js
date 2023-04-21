@@ -54,18 +54,18 @@ const addItem = async (item) => {
 	}
 }
 
-const addSubcategory = async (subcategory) => {
+const addSubcategory = async (category) => {
 	const session = neo4jDriver.session()
 	try {
 		const result = await session.run(
 			`
-            MERGE (n:Subcategory {subcategoryId: $subcategoryId}) 
-            SET n.name = $subcategoryName 
+            MERGE (n:Category {categoryId: $categoryId}) 
+            SET n.name = $categoryName 
             RETURN n
             `,
 			{
-				subcategoryId: subcategory.id,
-				subcategoryName: subcategory.name,
+				categoryId: category.id,
+				categoryName: category.name,
 			}
 		)
 		//console.log(result.records[0].get('n'))
@@ -177,19 +177,19 @@ const connectItemProviderMentor = async (itemId, providerId, mentorId) => {
 	}
 }
 
-const createBelongsToEdge = async (itemId, subcategoryId) => {
+const createBelongsToEdge = async (itemId, categoryId) => {
 	const session = neo4jDriver.session()
 	try {
 		await session.run(
 			`
             MATCH 
                 (i:Item {itemId: $itemId}), 
-                (c:Subcategory {subcategoryId: $subcategoryId}) 
+                (c:Category {categoryId: $categoryId}) 
             MERGE(i)-[:BELONGS_TO]->(c)
             `,
 			{
 				itemId,
-				subcategoryId,
+				categoryId,
 			}
 		)
 		return true
