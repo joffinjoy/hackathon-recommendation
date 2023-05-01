@@ -1,36 +1,37 @@
 'use strict'
-const { recommendationQueries } = require('@database/graph/recommendation/nodeQueries')
+const { nodeQueries } = require('@database/graph/nodeQueries')
+const { readQueries } = require('@database/graph/readQueries')
 const { failedRes } = require('@utils/failedRes')
 
 const addUser = async (req, res) => {
 	try {
 		const { userId, email, name, phone } = req.body
-		const userNode = await recommendationQueries.addUser({ userId, email, name, phone })
-		if (!userNode) return failedRes(res, 'Something Went Wrong')
+		const userNode = await nodeQueries.addUser({ userId, email, name, phone })
 		res.status(200).json({
 			status: true,
 			message: 'User Added To Recommendation Engine',
-			data: userNode,
+			data: userNode.properties,
 		})
 	} catch (err) {
 		console.log(err)
+		failedRes(res, 'Something Went Wrong')
 	}
 }
 
 const getUserEmails = async (req, res) => {
 	try {
-		const result = await recommendationQueries.getEmailIds()
+		const result = await readQueries.getEmailIds()
 		const emails = result.records.map((record) => {
 			return record._fields[0]
 		})
-		//console.log(emails)
 		res.status(200).json({
 			status: true,
-			message: 'User Added To Recommendation Engine',
+			message: 'All User Emails Fetched Successfully',
 			data: emails,
 		})
 	} catch (err) {
 		console.log(err)
+		failedRes(res, 'Something Went Wrong')
 	}
 }
 

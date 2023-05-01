@@ -120,10 +120,26 @@ const addProvider = async (provider) => {
 	}
 }
 
+const deleteAllNodes = async () => {
+	const session = neo4jDriver.session()
+	try {
+		const query = 'MATCH (n) DETACH DELETE n'
+		const writeResult = await session.executeWrite((tx) => tx.run(query))
+		return {
+			nodesDeleted: writeResult.summary.counters._stats.nodesDeleted,
+			relationshipsDeleted: writeResult.summary.counters._stats.relationshipsDeleted,
+		}
+	} catch (err) {
+		console.log(err)
+		session.close()
+	}
+}
+
 exports.nodeQueries = {
 	addUser,
 	addItem,
 	addCategory,
 	addProvider,
 	addMentor,
+	deleteAllNodes,
 }

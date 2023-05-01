@@ -99,7 +99,7 @@ const createRatedEdge = async (itemId, userId, rating) => {
                 (i:Item {itemId: $itemId}), 
                 (u:User {userId: $userId}) 
             MERGE (u)-[r:RATED]->(i) 
-            SET r.rating = $rating 
+            SET r.rating = $rating
             RETURN u,r,i
         `
 		const writeResult = await session.executeWrite((tx) =>

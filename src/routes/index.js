@@ -9,16 +9,15 @@ router.post('/add-user', userController.addUser)
 router.post('/add-item', itemController.addItem)
 router.post('/add-rating', ratingController.addRating)
 
-router.post('/trigger-page-rank', recommendationController.triggerPageRank)
-router.post('/trigger-projection-and-knn', recommendationController.triggerProjectionAndKNN)
+router.post('/recompute-pagerank', recommendationController.recomputePageRank)
+router.post('/recompute-collaborative-similarity', recommendationController.recomputeCollaborativeSimilarity)
 router.get('/trigger-auto-search', recommendationController.triggerAutoSearch)
 router.post('/recompute-content-similarity', recommendationController.recomputeContentSimilarity)
 
-router.post('/get-recommendations', recommendationController.getRecommendations)
+router.post('/get-collaborative-recommendations', recommendationController.getCollaborativeRecommendations)
 router.post('/get-item-page-recommendations', recommendationController.getItemPageRecommendations)
 router.post('/get-profile-page-recommendations', recommendationController.getProfilePageRecommendations)
 
-router.post('/set-unique-constraints', recommendationController.setUniqueConstraints)
 router.post('/get-user-emails', userController.getUserEmails)
 router.get('/delete-all-nodes', recommendationController.deleteAllNodes)
 

@@ -1,5 +1,6 @@
 'use strict'
 const { itemService } = require('@services/item')
+const { failedRes } = require('@utils/failedRes')
 
 const addItem = async (req, res) => {
 	try {
@@ -13,6 +14,7 @@ const addItem = async (req, res) => {
 		})
 	} catch (err) {
 		console.log(err)
+		failedRes(res, 'Something Went Wrong')
 	}
 }
 

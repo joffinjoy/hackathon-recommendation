@@ -1,7 +1,6 @@
 'use strict'
-
-const { nodeQueries } = require('@database/graph/recommendation/nodeQueries')
-const { edgeQueries } = require('@database/graph/recommendation/edgeQueries')
+const { nodeQueries } = require('@database/graph/nodeQueries')
+const { edgeQueries } = require('@database/graph/edgeQueries')
 const { wordsExtractor } = require('@utils/wordsExtractor')
 
 const addItem = async ({ item, categories, mentor, provider }) => {
@@ -17,13 +16,14 @@ const addItem = async ({ item, categories, mentor, provider }) => {
 		const providerId = providerNode.properties.providerId
 		const mentorId = mentorNode.properties.mentorId
 		const topics = wordsExtractor(item.title, ['NN', 'VBG'])
-		console.log(topics)
+		const categoryIds = []
 
 		await Promise.all([
 			edgeQueries.createItemMentorProviderEdges(itemId, providerId, mentorId),
 			Promise.all(
 				categoryNodesArray.map(async (categoryNode) => {
 					await edgeQueries.createBelongsToEdge(itemId, categoryNode.properties.categoryId)
+					categoryIds.push(categoryNode.properties.categoryId)
 				})
 			),
 			Promise.all(
@@ -37,6 +37,7 @@ const addItem = async ({ item, categories, mentor, provider }) => {
 			itemId,
 			providerId,
 			mentorId,
+			categoryIds,
 		}
 	} catch (err) {
 		console.log('ItemService.addItem: ', err)

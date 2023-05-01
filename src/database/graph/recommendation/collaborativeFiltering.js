@@ -4,10 +4,10 @@ const { neo4jDriver } = require('@configs/neo4j')
 const generateProjection = async () => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run(
+		return await session.run(
 			`
             CALL gds.graph.project(
-                'ratings',
+                'collabGraph',
                 ['User','Item'],
                 {
                   RATED: {
@@ -18,10 +18,9 @@ const generateProjection = async () => {
             )
             `
 		)
-		console.log(JSON.stringify(result, null, 4))
-		return true
 	} catch (err) {
-		console.log(err)
+		console.log('collaborativeFilteringQueries.generateProjection: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
@@ -30,22 +29,20 @@ const generateProjection = async () => {
 const runFRP = async () => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run(
+		await session.run(
 			`
-            CALL gds.fastRP.mutate('ratings', {
+            CALL gds.fastRP.mutate('collabGraph', {
                 embeddingDimension: 16,
                 randomSeed: 42,
                 mutateProperty: 'embedding',
                 relationshipWeightProperty: 'rating',
                 iterationWeights: [0.8, 1, 1, 1]
             })
-            YIELD nodePropertiesWritten
             `
 		)
-		console.log(JSON.stringify(result, null, 4))
-		return true
 	} catch (err) {
-		console.log(err)
+		console.log('collaborativeFilteringQueries.runFRP: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
@@ -54,9 +51,9 @@ const runFRP = async () => {
 const runKNN = async () => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run(
+		return await session.run(
 			`
-            CALL gds.knn.write('ratings', {
+            CALL gds.knn.write('collabGraph', {
                 topK: 9,
                 nodeProperties: ['embedding'],
                 randomSeed: 42,
@@ -66,14 +63,11 @@ const runKNN = async () => {
                 writeRelationshipType: "COLLAB_SIMILAR",
                 writeProperty: "score"
             })
-            YIELD nodesCompared, relationshipsWritten, similarityDistribution
-            RETURN nodesCompared, relationshipsWritten, similarityDistribution.mean as meanSimilarity
             `
 		)
-		console.log(JSON.stringify(result, null, 4))
-		return true
 	} catch (err) {
-		console.log(err)
+		console.log('collaborativeFilteringQueries.runKNN: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
@@ -82,45 +76,37 @@ const runKNN = async () => {
 const findSimilarUsers = async (userId) => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run(
-			`
+		const readQuery = `
             MATCH (n:User{userId: $userId})-[r:COLLAB_SIMILAR]->(m:User) 
             RETURN 
                 n.userId as User1, 
                 m.userId as User2, 
                 r.score as similarity 
-            ORDER BY similarity DESCENDING, User1, User2
-            `,
-			{ userId }
-		)
-		console.log(JSON.stringify(result, null, 4))
-		return result
+            ORDER BY similarity DESCENDING, User1, User2`
+		const readResult = await session.executeRead((tx) => tx.run(readQuery, { userId }))
+		return readResult
 	} catch (err) {
-		console.log(err)
+		console.log('collaborativeFilteringQueries.findSimilarUsers: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
 }
 
-const recommendItems = async (similarUserId, userId) => {
+const getRecommendedItems = async (similarUserId, userId) => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run(
-			`
+		const readQuery = `
             MATCH (:User {userId: $userId})-->(p1:Item)
             WITH collect(p1) as items
             MATCH (:User {userId: $similarUserId})-->(p2:Item)
             WHERE not p2 in items
-            RETURN p2.itemId as itemId, p2.title as title
-            `,
-			{
-				similarUserId,
-				userId,
-			}
-		)
-		return result
+            RETURN p2.itemId as itemId, p2.title as title`
+		const readResult = await session.executeRead((tx) => tx.run(readQuery, { similarUserId, userId }))
+		return readResult
 	} catch (err) {
-		console.log(err)
+		console.log('collaborativeFilteringQueries.getRecommendedItems: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
@@ -129,59 +115,38 @@ const recommendItems = async (similarUserId, userId) => {
 const deleteProjection = async () => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run("CALL gds.graph.drop('ratings')")
-		console.log(JSON.stringify(result, null, 4))
-		return true
+		return await session.run("CALL gds.graph.drop('collabGraph')")
 	} catch (err) {
-		console.log(err)
+		console.log('collaborativeFilteringQueries.deleteProjection: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
 }
 
-const setRatingToInteger = async () => {
+const deleteCollabSimilarRelationships = async () => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run(
-			`
-            MATCH ()-[r:RATED]->()
-            SET r.rating = toInteger(r.rating)
-            `
-		)
-		console.log(JSON.stringify(result, null, 4))
-		return true
-	} catch (err) {
-		console.log(err)
-	} finally {
-		session.close()
-	}
-}
-
-const deleteDeleteSIMILARRelationships = async () => {
-	const session = neo4jDriver.session()
-	try {
-		const result = await session.run(
+		return await session.run(
 			`
             match ()-[n:COLLAB_SIMILAR]-() 
             DELETE n
             `
 		)
-		console.log(JSON.stringify(result, null, 4))
-		return true
 	} catch (err) {
-		console.log(err)
+		console.log('collaborativeFilteringQueries.deleteCollabSimilarRelationships: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
 }
 
-exports.frpQueries = {
+exports.collaborativeFilteringQueries = {
 	generateProjection,
 	runFRP,
 	runKNN,
 	findSimilarUsers,
-	recommendItems,
+	getRecommendedItems,
 	deleteProjection,
-	deleteDeleteSIMILARRelationships,
-	setRatingToInteger,
+	deleteCollabSimilarRelationships,
 }

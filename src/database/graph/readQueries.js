@@ -1,16 +1,12 @@
 'use strict'
 const { neo4jDriver } = require('@configs/neo4j')
 
-const getEmailIds = async (itemId, userId, rating) => {
+const getEmailIds = async () => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run('match (n:User) return n.email', {
-			itemId,
-			userId,
-			rating,
-		})
-		console.log(result)
-		return result
+		const readQuery = 'MATCH (n:User) return n.email'
+		const readResult = await session.executeRead((tx) => tx.run(readQuery))
+		return readResult
 	} catch (err) {
 		console.log('ReadQueries.getEmailIds: ', err)
 		throw err
