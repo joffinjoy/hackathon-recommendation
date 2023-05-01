@@ -1,9 +1,5 @@
 'use strict'
-const { externalPOSTRequest, internalPOSTRequest } = require('@utils/requester')
-
-exports.externalRequests = {
-	//dsepPOST: externalPOSTRequest(),
-}
+const { internalPOSTRequest } = require('@utils/requester')
 
 exports.internalRequests = {
 	bapPOST: internalPOSTRequest(process.env.BAP_URI),

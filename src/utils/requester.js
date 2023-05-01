@@ -1,7 +1,5 @@
 'use strict'
 const axios = require('axios')
-const { isEmpty } = require('@utils/generic')
-const { compile } = require('path-to-regexp')
 
 exports.postRequest = async (baseURL, route, headers = {}, body) => {
 	try {
@@ -18,28 +16,6 @@ exports.postRequest = async (baseURL, route, headers = {}, body) => {
 		else console.log('Error: ', err.message)
 		console.log('Request CONFIG: ', err.config)
 	}
-}
-
-exports.getRequest = async (baseURL, route, headers = {}, pathParams = {}, queryParams = {}) => {
-	try {
-		route = compile(route, { encode: encodeURIComponent })(pathParams)
-		let url = baseURL + route
-		if (!isEmpty(queryParams)) url += '?' + new URLSearchParams(queryParams).toString()
-		const response = await axios.get(url, { headers })
-		return response.data
-	} catch (err) {
-		if (err.response) {
-			console.log('Response Data: ', err.response.data)
-			console.log('Response Status:', err.response.status)
-			console.log('Response Headers', err.response.headers)
-		} else if (err.request) console.log(err.request)
-		else console.log('Error: ', err.message)
-		console.log('Request CONFIG: ', err.config)
-	}
-}
-
-exports.externalPOSTRequest = () => {
-	return async ({ baseURL, headers, body, route }) => await exports.postRequest(baseURL, route, headers, body)
 }
 
 exports.internalPOSTRequest = (baseURL) => {

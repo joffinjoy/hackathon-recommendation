@@ -4,16 +4,15 @@ const { neo4jDriver } = require('@configs/neo4j')
 const deleteContentSimilarRelationships = async () => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run(
+		return await session.run(
 			`
             MATCH ()-[r:CONTENT_SIMILAR]-()
             DELETE r
             `
 		)
-		console.log(JSON.stringify(result, null, 4))
-		return true
 	} catch (err) {
-		console.log(err)
+		console.log('contentFilteringQueries.deleteContentSimilarRelationships: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
@@ -26,7 +25,8 @@ const deleteProjection = async () => {
 		console.log(JSON.stringify(result, null, 4))
 		return true
 	} catch (err) {
-		console.log(err)
+		console.log('contentFilteringQueries.deleteProjection: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
@@ -49,7 +49,8 @@ const generateProjection = async () => {
 		console.log(JSON.stringify(result, null, 4))
 		return true
 	} catch (err) {
-		console.log(err)
+		console.log('contentFilteringQueries.generateProjection: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
@@ -73,7 +74,8 @@ const runNodeSimilarity = async () => {
 		console.log(JSON.stringify(result, null, 4))
 		return true
 	} catch (err) {
-		console.log(err)
+		console.log('contentFilteringQueries.runNodeSimilarity: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
@@ -96,10 +98,10 @@ const getSimilarItems = async (itemId) => {
 		const recommendedItems = result.records.map((record) => {
 			return { itemId: record.get('itemId'), title: record.get('title') }
 		})
-		//const selectedItem = result.records[0].get('i')
 		return recommendedItems
 	} catch (err) {
-		console.log(err)
+		console.log('contentFilteringQueries.getSimilarItems: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
@@ -130,10 +132,10 @@ const getProfilePageItems = async (userId) => {
 		const recommendedItems = result.records.map((record) => {
 			return { itemId: record.get('itemId'), title: record.get('title'), score: record.get('score') }
 		})
-		//const selectedItem = result.records[0].get('i')
 		return recommendedItems
 	} catch (err) {
-		console.log(err)
+		console.log('contentFilteringQueries.getProfilePageItems: ', err)
+		throw err
 	} finally {
 		session.close()
 	}
