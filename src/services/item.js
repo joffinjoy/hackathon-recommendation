@@ -1,57 +1,43 @@
 'use strict'
 
-const { recommendationQueries } = require('@database/graph/recommendation/queries')
-const { nounTokenizer } = require('@utils/tokenizer')
+const { nodeQueries } = require('@database/graph/recommendation/nodeQueries')
+const { edgeQueries } = require('@database/graph/recommendation/edgeQueries')
+const { wordsExtractor } = require('@utils/wordsExtractor')
 
 const addItem = async ({ item, categories, mentor, provider }) => {
 	try {
-		const itemNode = await recommendationQueries.addItem(item)
-		const mentorNode = await recommendationQueries.addMentor(mentor)
-		const providerNode = await recommendationQueries.addProvider(provider)
-
+		const itemNode = await nodeQueries.addItem(item)
+		const mentorNode = await nodeQueries.addMentor(mentor)
+		const providerNode = await nodeQueries.addProvider(provider)
 		const categoryNodesArray = await Promise.all(
-			categories.map(async (category) => {
-				/* const categoryNodes = await Promise.all(
-					category.name.split(' ').map(async (category) => {
-						console.log('CATEGORY: ', category)
-						return await recommendationQueries.addCategory({
-							id: category.toLowerCase(),
-							name: category,
-						})
-					})
-				) */
-				const subcategoryNode = await recommendationQueries.addSubcategory(category)
-				return {
-					/* categoryNodes, */
-					subcategoryNode,
-				}
-			})
+			categories.map(async (category) => await nodeQueries.addCategory(category))
 		)
-		console.log('CATEGORY NODES:', categoryNodesArray)
-		console.log(typeof categoryNodesArray)
 
 		const itemId = itemNode.properties.itemId
 		const providerId = providerNode.properties.providerId
 		const mentorId = mentorNode.properties.mentorId
-		await recommendationQueries.connectItemProviderMentor(itemId, providerId, mentorId)
-		await Promise.all(
-			categoryNodesArray.map(async (categoryObject) => {
-				recommendationQueries.createBelongsToEdge(itemId, categoryObject.subcategoryNode.properties.categoryId)
-				/* categoryObject.categoryNodes.map((category) => {
-					recommendationQueries.createRelatedToEdge(itemId, category.properties.categoryId)
-					recommendationQueries.createSubcategoryOfEdge(
-						categoryObject.subcategoryNode.properties.subcategoryId,
-						category.properties.categoryId
-					)
-				}) */
-			})
-		)
+		const topics = wordsExtractor(item.title, ['NN', 'VBG'])
+		console.log(topics)
 
-		const relevantTokens = nounTokenizer(item.title)
-		relevantTokens.map((token) => {
-			if (!token.includes('ClusterNumber')) recommendationQueries.createIsAboutEdge(itemId, token)
-		})
-		return true
+		await Promise.all([
+			edgeQueries.createItemMentorProviderEdges(itemId, providerId, mentorId),
+			Promise.all(
+				categoryNodesArray.map(async (categoryNode) => {
+					await edgeQueries.createBelongsToEdge(itemId, categoryNode.properties.categoryId)
+				})
+			),
+			Promise.all(
+				topics.map(async (token) => {
+					if (!token.includes('ClusterNumber')) return await edgeQueries.createIsAboutEdge(itemId, token)
+					else return true
+				})
+			),
+		])
+		return {
+			itemId,
+			providerId,
+			mentorId,
+		}
 	} catch (err) {
 		console.log(err)
 		throw err

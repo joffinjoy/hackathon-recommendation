@@ -1,5 +1,5 @@
 'use strict'
-const { recommendationQueries } = require('@database/graph/recommendation/queries')
+const { recommendationQueries } = require('@database/graph/recommendation/nodeQueries')
 const { failedRes } = require('@utils/failedRes')
 
 const addUser = async (req, res) => {

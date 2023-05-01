@@ -6,17 +6,13 @@ const tokenizer = new natural.WordTokenizer()
 const stopWords = natural.stopwords
 const tagger = new pos.Tagger()
 
-exports.nounTokenizer = (inputString) => {
+exports.wordsExtractor = (inputString, types = []) => {
 	const tokens = tokenizer.tokenize(inputString).filter((token) => {
 		return !stopWords.includes(token)
 	})
 	const taggedTokens = tagger.tag(tokens)
-	const keywords = []
-	for (const [token, tag] of taggedTokens) {
-		if (tag.startsWith('NN') || tag.startsWith('VBG')) {
-			// NN is the tag for a noun
-			keywords.push(token)
-		}
-	}
-	return keywords
+	const words = taggedTokens.map(([token, tag]) => {
+		if (types.some((type) => tag.startsWith(type))) return token
+	})
+	return words.filter((word) => word !== undefined)
 }

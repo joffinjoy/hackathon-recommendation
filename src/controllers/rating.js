@@ -1,10 +1,10 @@
 'use strict'
-const { recommendationQueries } = require('@database/graph/recommendation/queries')
+const { edgeQueries } = require('@database/graph/recommendation/edgeQueries')
 
 const addRating = async (req, res) => {
 	try {
 		const { userId, itemId, rating } = req.body
-		await recommendationQueries.addRating(itemId, userId, rating)
+		await edgeQueries.createRatedEdge(itemId, userId, rating)
 		res.status(200).json({
 			status: true,
 			message: 'Rating Added To Recommendation Engine',

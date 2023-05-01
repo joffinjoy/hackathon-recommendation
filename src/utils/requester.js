@@ -2,8 +2,6 @@
 const axios = require('axios')
 const { isEmpty } = require('@utils/generic')
 const { compile } = require('path-to-regexp')
-/* const https = require('https')
-const httpsAgent = new https.Agent({ rejectUnauthorized: false }) */
 
 exports.postRequest = async (baseURL, route, headers = {}, body) => {
 	try {

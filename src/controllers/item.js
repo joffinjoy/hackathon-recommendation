@@ -9,7 +9,7 @@ const addItem = async (req, res) => {
 		res.status(200).json({
 			status: true,
 			message: 'Item Added To Recommendation Engine',
-			data: {},
+			data: result,
 		})
 	} catch (err) {
 		console.log(err)
