@@ -12,7 +12,7 @@ const getEmailIds = async (itemId, userId, rating) => {
 		console.log(result)
 		return result
 	} catch (err) {
-		console.log(err)
+		console.log('ReadQueries.getEmailIds: ', err)
 		throw err
 	} finally {
 		session.close()

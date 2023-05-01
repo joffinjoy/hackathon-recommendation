@@ -27,7 +27,7 @@ const createItemMentorProviderEdges = async (itemId, providerId, mentorId) => {
 			memberOf: writeResult.records[0].get('mem'),
 		}
 	} catch (err) {
-		console.log(err)
+		console.log('EdgeQueries.createItemMentorProviderEdges: ', err)
 		throw err
 	} finally {
 		session.close()
@@ -55,7 +55,7 @@ const createBelongsToEdge = async (itemId, categoryId) => {
 			belongsTo: writeResult.records[0].get('b'),
 		}
 	} catch (err) {
-		console.log(err)
+		console.log('EdgeQueries.createBelongsToEdge: ', err)
 		throw err
 	} finally {
 		session.close()
@@ -83,7 +83,7 @@ const createIsAboutEdge = async (itemId, topicName) => {
 			isAbout: writeResult.records[0].get('is'),
 		}
 	} catch (err) {
-		console.log(err)
+		console.log('EdgeQueries.createIsAboutEdge: ', err)
 		throw err
 	} finally {
 		session.close()
@@ -115,7 +115,7 @@ const createRatedEdge = async (itemId, userId, rating) => {
 			rated: writeResult.records[0].get('r'),
 		}
 	} catch (err) {
-		console.log(err)
+		console.log('EdgeQueries.createRatedEdge: ', err)
 		throw err
 	} finally {
 		session.close()

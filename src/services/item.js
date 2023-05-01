@@ -39,7 +39,7 @@ const addItem = async ({ item, categories, mentor, provider }) => {
 			mentorId,
 		}
 	} catch (err) {
-		console.log(err)
+		console.log('ItemService.addItem: ', err)
 		throw err
 	}
 }

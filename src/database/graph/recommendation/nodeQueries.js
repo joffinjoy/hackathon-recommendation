@@ -21,7 +21,7 @@ const addUser = async (user) => {
 		)
 		return writeResult.records[0].get('n')
 	} catch (err) {
-		console.log(err)
+		console.log('NodeQueries.addUser: ', err)
 		throw err
 	} finally {
 		session.close()
@@ -44,7 +44,7 @@ const addItem = async (item) => {
 		)
 		return writeResult.records[0].get('n')
 	} catch (err) {
-		console.log(err)
+		console.log('NodeQueries.addItem: ', err)
 		throw err
 	} finally {
 		session.close()
@@ -67,7 +67,7 @@ const addCategory = async (category) => {
 		)
 		return writeResult.records[0].get('n')
 	} catch (err) {
-		console.log(err)
+		console.log('NodeQueries.addCategory: ', err)
 		throw err
 	} finally {
 		session.close()
@@ -90,7 +90,7 @@ const addMentor = async (mentor) => {
 		)
 		return writeResult.records[0].get('n')
 	} catch (err) {
-		console.log(err)
+		console.log('NodeQueries.addMentor: ', err)
 		throw err
 	} finally {
 		session.close()
@@ -113,7 +113,7 @@ const addProvider = async (provider) => {
 		)
 		return writeResult.records[0].get('n')
 	} catch (err) {
-		console.log(err)
+		console.log('NodeQueries.addProvider: ', err)
 		throw err
 	} finally {
 		session.close()
