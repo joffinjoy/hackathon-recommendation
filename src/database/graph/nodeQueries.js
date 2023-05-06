@@ -130,7 +130,9 @@ const deleteAllNodes = async () => {
 			relationshipsDeleted: writeResult.summary.counters._stats.relationshipsDeleted,
 		}
 	} catch (err) {
-		console.log(err)
+		console.log('NodeQueries.deleteAllNodes: ', err)
+		throw err
+	} finally {
 		session.close()
 	}
 }

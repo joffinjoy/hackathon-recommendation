@@ -2,29 +2,25 @@
 
 const cron = require('node-cron')
 const { autoSearchQueries } = require('@database/graph/recommendation/autoSearch')
-const { internalRequests } = require('@helpers/requests')
 const { contentFilteringQueries } = require('@database/graph/recommendation/contentFiltering')
+const { bapRequests } = require('@requests/bap')
 
 const autoSearchTask = cron.schedule(
-	'*/1 * * * *',
+	`*/${parseInt(process.env.AUTO_SEARCH_INTERVAL_IN_MINUTES)} * * * *`,
 	async () => {
-		const min = 10
-		const max = 20
+		const min = parseInt(process.env.RANDOM_SKIP_MIN)
+		const max = parseInt(process.env.RANDOM_SKIP_MAX)
 		const randomSkipCount = Math.floor(Math.random() * (max - min + 1)) + min
-		const importantTopics = await autoSearchQueries.getImportantTopics(0, 10)
-		const secondaryTopics = await autoSearchQueries.getImportantTopics(randomSkipCount, 5)
+		const importantTopics = await autoSearchQueries.getImportantTopics(
+			0,
+			parseInt(process.env.AUTO_SEARCH_TOP_TOPICS_COUNT)
+		)
+		const secondaryTopics = await autoSearchQueries.getImportantTopics(
+			randomSkipCount,
+			parseInt(process.env.AUTO_SEARCH_RANDOM_TOPICS_COUNT)
+		)
 		const topics = importantTopics.records.concat(secondaryTopics.records)
-		console.log(topics)
-		for (const record of topics) {
-			console.log(record.get('topic'), ' : ', record.get('pageRank'))
-			await internalRequests.bapPOST({
-				route: process.env.BAP_DSEP_SEARCH,
-				body: {
-					sessionTitle: record.get('topic'),
-					type: 'session',
-				},
-			})
-		}
+		for (const record of topics) await bapRequests.runSessionSearch(record.get('topic'))
 		await contentFilteringQueries.deleteProjection()
 		await contentFilteringQueries.deleteContentSimilarRelationships()
 		await contentFilteringQueries.generateProjection()
@@ -37,16 +33,15 @@ const autoSearchTask = cron.schedule(
 
 const triggerAutoSearch = async (command) => {
 	try {
-		//console.log('Smar', command)
 		if (command === 'start') {
-			console.log('SMART AUTO-SEARCH STARTED')
 			autoSearchTask.start()
-		} else {
-			console.log('SMART AUTO-SEARCH STOPPED')
-			autoSearchTask.stop()
+			return 'Auto-Search Started'
 		}
+		autoSearchTask.stop()
+		return 'Auto-Search Stopped'
 	} catch (err) {
-		console.log(err)
+		console.log('autoSearchService.triggerAutoSearch: ', err)
+		throw err
 	}
 }
 

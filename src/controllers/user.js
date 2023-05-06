@@ -2,16 +2,13 @@
 const { nodeQueries } = require('@database/graph/nodeQueries')
 const { readQueries } = require('@database/graph/readQueries')
 const { failedRes } = require('@utils/failedRes')
+const { successRes } = require('@utils/successRes')
 
 const addUser = async (req, res) => {
 	try {
 		const { userId, email, name, phone } = req.body
 		const userNode = await nodeQueries.addUser({ userId, email, name, phone })
-		res.status(200).json({
-			status: true,
-			message: 'User Added To Recommendation Engine',
-			data: userNode.properties,
-		})
+		successRes(res, 'User Added To Recommendation Engine', userNode.properties)
 	} catch (err) {
 		console.log(err)
 		failedRes(res, 'Something Went Wrong')
@@ -24,11 +21,7 @@ const getUserEmails = async (req, res) => {
 		const emails = result.records.map((record) => {
 			return record._fields[0]
 		})
-		res.status(200).json({
-			status: true,
-			message: 'All User Emails Fetched Successfully',
-			data: emails,
-		})
+		successRes(res, 'All User Emails Fetched Successfully', emails)
 	} catch (err) {
 		console.log(err)
 		failedRes(res, 'Something Went Wrong')

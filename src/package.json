@@ -41,6 +41,7 @@
 		"@middlewares": "middlewares",
 		"@dtos": "dtos",
 		"@helpers": "helpers",
-		"@services": "services"
+		"@services": "services",
+		"@requests": "requests"
 	}
 }

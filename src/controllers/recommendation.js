@@ -7,16 +7,13 @@ const { autoSearchService } = require('@services/autoSearch')
 const { nodeQueries } = require('@database/graph/nodeQueries')
 const { recommendationService } = require('@services/recommendation')
 const { failedRes } = require('@utils/failedRes')
+const { successRes } = require('@utils/successRes')
 
 const getCollaborativeRecommendations = async (req, res) => {
 	try {
 		const userId = req.body.userId
 		const recommendedItems = await recommendationService.getCollaborativeRecommendations(userId)
-		res.status(200).json({
-			status: true,
-			message: `Recommendations For User: ${userId} Retrieved`,
-			data: recommendedItems,
-		})
+		successRes(res, `Recommendations For User: ${userId} Retrieved`, recommendedItems)
 	} catch (err) {
 		console.log(err)
 		failedRes(res, 'Something Went Wrong')
@@ -30,10 +27,7 @@ const recomputeCollaborativeSimilarity = async (req, res) => {
 		await collaborativeFilteringQueries.generateProjection()
 		await collaborativeFilteringQueries.runFRP()
 		await collaborativeFilteringQueries.runKNN()
-		res.status(200).json({
-			status: true,
-			message: 'Collaborative Filtering Recomputed Successfully',
-		})
+		successRes(res, 'Collaborative Filtering Recomputed Successfully')
 	} catch (err) {
 		console.log(err)
 		failedRes(res, 'Something Went Wrong')
@@ -46,11 +40,7 @@ const recomputeContentSimilarity = async (req, res) => {
 		await contentFilteringQueries.deleteContentSimilarRelationships()
 		await contentFilteringQueries.generateProjection()
 		await contentFilteringQueries.runNodeSimilarity()
-		res.status(200).json({
-			status: true,
-			message: 'Content Similarity Recomputed Successfully',
-			data: {},
-		})
+		successRes(res, 'Content Similarity Recomputed Successfully')
 	} catch (err) {
 		console.log(err)
 		failedRes(res, 'Something Went Wrong')
@@ -61,11 +51,7 @@ const getItemPageRecommendations = async (req, res) => {
 	try {
 		const itemId = req.body.itemId
 		const similarItems = await contentFilteringQueries.getSimilarItems(itemId)
-		res.status(200).json({
-			status: true,
-			message: 'Item Page Recommendations Fetched',
-			data: similarItems,
-		})
+		successRes(res, 'Item Page Recommendations Fetched', similarItems)
 	} catch (err) {
 		console.log(err)
 		failedRes(res, 'Something Went Wrong')
@@ -76,11 +62,7 @@ const getProfilePageRecommendations = async (req, res) => {
 	try {
 		const userId = req.body.userId
 		const similarItems = await contentFilteringQueries.getProfilePageItems(userId)
-		res.status(200).json({
-			status: true,
-			message: 'Item Page Recommendations Fetched',
-			data: similarItems,
-		})
+		successRes(res, 'Profile Page Recommendations Fetched', similarItems)
 	} catch (err) {
 		console.log(err)
 		failedRes(res, 'Something Went Wrong')
@@ -92,11 +74,7 @@ const recomputePageRank = async (req, res) => {
 		await pageRankQueries.deleteProjection()
 		await pageRankQueries.generateProjection()
 		await pageRankQueries.runPageRank()
-		res.status(200).json({
-			status: true,
-			message: 'PageRank Computed Successfully',
-			data: [],
-		})
+		successRes(res, 'PageRank Computed Successfully')
 	} catch (err) {
 		console.log(err)
 		failedRes(res, 'Something Went Wrong')
@@ -106,12 +84,8 @@ const recomputePageRank = async (req, res) => {
 const triggerAutoSearch = async (req, res) => {
 	try {
 		const command = req.query.command
-		await autoSearchService.triggerAutoSearch(command)
-		res.status(200).json({
-			status: true,
-			message: 'AutoSearch Command Received Successfully',
-			data: [],
-		})
+		const result = await autoSearchService.triggerAutoSearch(command)
+		successRes(res, 'AutoSearch Command Received Successfully', result)
 	} catch (err) {
 		console.log(err)
 		failedRes(res, 'Something Went Wrong')
@@ -121,11 +95,7 @@ const triggerAutoSearch = async (req, res) => {
 const deleteAllNodes = async (req, res) => {
 	try {
 		const result = await nodeQueries.deleteAllNodes()
-		res.status(200).json({
-			status: true,
-			message: 'All Nodes Deleted',
-			data: result,
-		})
+		successRes(res, 'All Nodes Deleted', result)
 	} catch (err) {
 		console.log(err)
 		failedRes(res, 'Something Went Wrong')

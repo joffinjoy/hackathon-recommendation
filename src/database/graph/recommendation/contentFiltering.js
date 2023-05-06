@@ -4,14 +4,14 @@ const { neo4jDriver } = require('@configs/neo4j')
 const deleteContentSimilarRelationships = async () => {
 	const session = neo4jDriver.session()
 	try {
-		return await session.run(
+		await session.run(
 			`
             MATCH ()-[r:CONTENT_SIMILAR]-()
             DELETE r
             `
 		)
 	} catch (err) {
-		console.log('contentFilteringQueries.deleteContentSimilarRelationships: ', err)
+		console.log('ContentFilteringQueries.deleteContentSimilarRelationships: ', err)
 		throw err
 	} finally {
 		session.close()
@@ -21,11 +21,16 @@ const deleteContentSimilarRelationships = async () => {
 const deleteProjection = async () => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run("CALL gds.graph.drop('contentGraph')")
-		console.log(JSON.stringify(result, null, 4))
-		return true
+		const result = await session.run(
+			`
+            CALL gds.graph.exists($projectionName) 
+            YIELD exists
+            `,
+			{ projectionName: 'contentGraph' }
+		)
+		if (result.records[0].get('exists')) await session.run("CALL gds.graph.drop('contentGraph')")
 	} catch (err) {
-		console.log('contentFilteringQueries.deleteProjection: ', err)
+		console.log('ContentFilteringQueries.deleteProjection: ', err)
 		throw err
 	} finally {
 		session.close()
@@ -35,21 +40,17 @@ const deleteProjection = async () => {
 const generateProjection = async () => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run(
+		await session.run(
 			`
             CALL gds.graph.project(
                 'contentGraph',
                 ['Item','Topic'],
                 ['IS_ABOUT']
             )
-            YIELD
-                graphName AS graph, nodeProjection, nodeCount AS nodes, relationshipCount AS rels
             `
 		)
-		console.log(JSON.stringify(result, null, 4))
-		return true
 	} catch (err) {
-		console.log('contentFilteringQueries.generateProjection: ', err)
+		console.log('ContentFilteringQueries.generateProjection: ', err)
 		throw err
 	} finally {
 		session.close()
@@ -59,8 +60,7 @@ const generateProjection = async () => {
 const runNodeSimilarity = async () => {
 	const session = neo4jDriver.session()
 	try {
-		//similarityCutoff: 0.5
-		const result = await session.run(
+		await session.run(
 			`
             CALL gds.nodeSimilarity.write('contentGraph', {
                 nodeLabels:['Item','Topic'],
@@ -68,13 +68,10 @@ const runNodeSimilarity = async () => {
                 writeProperty: 'score',
                 similarityCutoff: 0.4
             })
-            YIELD nodesCompared, relationshipsWritten
             `
 		)
-		console.log(JSON.stringify(result, null, 4))
-		return true
 	} catch (err) {
-		console.log('contentFilteringQueries.runNodeSimilarity: ', err)
+		console.log('ContentFilteringQueries.runNodeSimilarity: ', err)
 		throw err
 	} finally {
 		session.close()
@@ -84,23 +81,18 @@ const runNodeSimilarity = async () => {
 const getSimilarItems = async (itemId) => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run(
-			`
+		const readQuery = `
             MATCH (i:Item {itemId: $itemId})-[r:CONTENT_SIMILAR]-(q:Item)
             WHERE r.score >= 0.5
             RETURN i as selectedItem, q.itemId as itemId, q.title as title
-            LIMIT 10
-            `,
-			{
-				itemId,
-			}
-		)
-		const recommendedItems = result.records.map((record) => {
+            LIMIT 10`
+		const readResult = await session.executeRead((tx) => tx.run(readQuery, { itemId }))
+		const recommendedItems = readResult.records.map((record) => {
 			return { itemId: record.get('itemId'), title: record.get('title') }
 		})
 		return recommendedItems
 	} catch (err) {
-		console.log('contentFilteringQueries.getSimilarItems: ', err)
+		console.log('ContentFilteringQueries.getSimilarItems: ', err)
 		throw err
 	} finally {
 		session.close()
@@ -110,8 +102,7 @@ const getSimilarItems = async (itemId) => {
 const getProfilePageItems = async (userId) => {
 	const session = neo4jDriver.session()
 	try {
-		const result = await session.run(
-			`
+		const readQuery = `
             MATCH (u:User {userId: $userId})-[r:RATED]->(i:Item)
             WITH i, COLLECT(i) as ratedItems, (r.rating - 1) / 4.0 as normalizedRating
             ORDER BY normalizedRating DESC
@@ -123,18 +114,14 @@ const getProfilePageItems = async (userId) => {
             ORDER BY simScore DESC
             WITH DISTINCT q, simScore
             LIMIT 10
-            RETURN q.itemId as itemId, q.title as title, simScore as score
-            `,
-			{
-				userId,
-			}
-		)
-		const recommendedItems = result.records.map((record) => {
+            RETURN q.itemId as itemId, q.title as title, simScore as score`
+		const readResult = await session.executeRead((tx) => tx.run(readQuery, { userId }))
+		const recommendedItems = readResult.records.map((record) => {
 			return { itemId: record.get('itemId'), title: record.get('title'), score: record.get('score') }
 		})
 		return recommendedItems
 	} catch (err) {
-		console.log('contentFilteringQueries.getProfilePageItems: ', err)
+		console.log('ContentFilteringQueries.getProfilePageItems: ', err)
 		throw err
 	} finally {
 		session.close()
